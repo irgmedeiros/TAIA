@@ -20,6 +20,7 @@ def loadData():
     load the data
     """
 
+    # Load adjacences
     try:
         liFile = open(file_links, "r")
         for index, line in enumerate(liFile):
@@ -35,6 +36,7 @@ def loadData():
     finally:
         liFile.close()
 
+    # Load labels
     try:
         laFile = open(file_labels, "r")
         for line in laFile:
@@ -62,10 +64,14 @@ def chunkIt(seq, num):
 
 def createSubDict(set):
     """Deixa a estrutura pronta para salvar em arquivo"""
-    newdata = {}
 
+    newdata = data.copy()
+    all_keys = newdata.keys()
 
-    # TODO code
+    # remove the labels of every key that is not in set
+    for key in all_keys:
+        if key not in set:
+            newdata[key] = {"adjacence" : newdata[key]["adjacence"], "label": ""}
 
     return newdata
 
@@ -89,7 +95,7 @@ def generateCrossvalidation():
     # Generate indepents subsets
     subsets = chunkIt(mapping_copy, 10)
 
-    # create crossValidation files
+    # Create crossValidation files
     for index, set in enumerate(subsets):
         newdata = createSubDict(set)
         saveFile(newdata, "validationSet" + str(index))
