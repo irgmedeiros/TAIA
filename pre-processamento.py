@@ -89,7 +89,7 @@ def generateCrossvalidation():
     # Generate indepents subsets
     subsets = chunkIt(mapping_copy, 10)
 
-    #
+    # create crossValidation files
     for index, set in enumerate(subsets):
         newdata = createSubDict(set)
         saveFile(newdata, "validationSet" + str(index))
