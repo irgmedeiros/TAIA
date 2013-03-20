@@ -1,6 +1,6 @@
 __author__ = 'Igor Medeiros'
 
-from random import random
+import random
 import os
 
 PROJECT_ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -51,6 +51,9 @@ def loadData():
 
 
 def chunkIt(seq, num):
+    """
+    Chunck a list of elements (seq) into a number (num) of sublists
+    """
     avg = len(seq) / float(num)
     out = []
     last = 0.0
@@ -63,7 +66,10 @@ def chunkIt(seq, num):
 
 
 def createSubDict(set):
-    """Deixa a estrutura pronta para salvar em arquivo"""
+    """
+    Input: subset (set) of item from original set that will still labeled
+    Output: New dictionary with empty labels in positions that are not in the subset
+    """
 
     newdata = data.copy()
     all_keys = newdata.keys()
@@ -75,12 +81,39 @@ def createSubDict(set):
 
     return newdata
 
+def buildMatrix(newdata):
+    """
+    Input: Dictionary with info about adjacences and labels
+    Output: Matrix, in the form of a list(columns) of lists(rows).
+    """
 
-def saveFile(newdata, filename):
+    for key in mapping:
+        # row with all zeros
+        row = [0.0]*(len(mapping))
+
+        label = newdata[key]["label"]
+        adjacences = newdata[key]["adjacence"]
+
+        # Node is not labeled case
+        if label is "":
+            # same probability among adjancents nodes
+            value = 1/len(adjacences)
+            # update value only for adjacents nodes
+            for elementIndex in range(len(row)):
+                if mapping[elementIndex] in adjacences:
+                    row[elementIndex] = value
+
+        # Node is labeled case
+        else:
+            index = mapping.index(key)
+            row[index] = 1.0
+
+
+def saveFile(matrix, filename):
 
     try:
         sFile = open(filename, "ab")
-        for line in newdata:
+        for line in matrix:
             sFile.write(line)
 
     finally:
@@ -88,7 +121,7 @@ def saveFile(newdata, filename):
 
 
 def generateCrossvalidation():
-    mapping_copy = mapping[:] # leave mapping to be read-only
+    mapping_copy = list(mapping) # leave mapping to be read-only
 
     # Shuffle the list
     random.shuffle(mapping_copy)
@@ -98,7 +131,8 @@ def generateCrossvalidation():
     # Create crossValidation files
     for index, set in enumerate(subsets):
         newdata = createSubDict(set)
-        saveFile(newdata, "validationSet" + str(index))
+        matrix = buildMatrix(newdata)
+        saveFile(matrix, "validationSet" + str(index))
 
 
 def main():
