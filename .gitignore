@@ -1,0 +1,9 @@
+*.pyc
+*.pyo
+*.log
+.*project
+*~
+*.db
+venv
+.settings
+.idea
