@@ -31,7 +31,6 @@ def loadData():
 
             if source not in data:
                 data[source] = {"adjacence": [target], "label": ""}
-                mapping.append(source)
             else:
                 data[source]["adjacence"].append(target)
     finally:
@@ -42,11 +41,16 @@ def loadData():
         laFile = open(file_labels, "r")
         for line in laFile:
             line = line.split()
-            target = line[0]
+            site = line[0]
             label = line[-1]
+            mapping.append(site)
 
-            if target in data:
-                data[target]["label"] = label
+            if site in data:
+                # Adding labels to existing sites in data
+                data[site]["label"] = label
+            else:
+                # Adding sites that don't cite anyone. They are only cited
+                data[site] = {"adjacence": [], "label": label}
     finally:
         laFile.close()
 
@@ -83,7 +87,7 @@ def createSubDict(set):
 
     return newdata
 
-def buildMatrix(newdata):
+def buildProbMatrix(newdata):
     """
     Input: Dictionary with info about adjacencies and labels
     Output: Matrix, in the form of a list(columns) of lists(rows).
@@ -97,8 +101,8 @@ def buildMatrix(newdata):
         label = newdata[key]["label"]
         adjacencies = newdata[key]["adjacence"]
 
-        # Node is not labeled case
-        if label is "":
+        # Case: Node is not labeled case
+        if label is "" and adjacencies != []:
             # same probability among adjacents nodes
             value = 1/float(len(adjacencies))
             # update value only for adjacents nodes
@@ -106,7 +110,7 @@ def buildMatrix(newdata):
                 if mapping[elementIndex] in adjacencies:
                     row[elementIndex] = value
 
-        # Node is labeled case
+        # Case: Node is labeled or don't cite anyone
         else:
             index = mapping.index(key)
             row[index] = 1.0
@@ -116,7 +120,11 @@ def buildMatrix(newdata):
     return matrix
 
 
-def saveFile(matrix, filename):
+def buildLabelMatrix(newdata):
+    # TODO
+    pass
+
+def saveMatrixFile(matrix, filename):
     try:
         sFile = open(filename, "wb")
         for row in matrix:
@@ -129,20 +137,22 @@ def saveFile(matrix, filename):
 
 def generateCrossvalidation():
     """
-    Generates the cross validation sets
+    Generates the cross-validation sets
     """
     mapping_copy = list(mapping) # leave mapping to be read-only
 
     # Shuffle the list
     random.shuffle(mapping_copy)
-    # Generate indepents subsets
+    # Generate Independents subsets
     subsets = chunkIt(mapping_copy, 10)
 
     # Create crossValidation files
     for index, set in enumerate(subsets):
         newdata = createSubDict(set)
-        matrix = buildMatrix(newdata)
-        saveFile(matrix, "validationSet" + str(index+1) + ".txt")
+        p_matrix = buildProbMatrix(newdata)
+        l_matrix = buildLabelMatrix(newdata)
+        saveMatrixFile(p_matrix, "cvProbability" + str(index+1) + ".txt")
+        saveMatrixFile(l_matrix, "cvLabel" + str(index+1) + ".txt")
 
 
 def main():
