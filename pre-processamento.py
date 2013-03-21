@@ -121,8 +121,21 @@ def buildProbMatrix(newdata):
 
 
 def buildLabelMatrix(newdata):
-    # TODO
-    pass
+
+    LABELS = ("course", "faculty", "student", "project", "staff")
+
+    matrix = []
+
+    for key in mapping:
+        # row with all zeros
+        row = [0.0]*(len(LABELS))
+        label = newdata[key]["label"]
+
+        if label is not "":
+            row[LABELS.index(label)] = 1.0
+        matrix.append(row)
+
+    return matrix
 
 def saveMatrixFile(matrix, filename):
     try:
