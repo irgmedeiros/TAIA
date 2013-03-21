@@ -1,3 +1,5 @@
+import math
+
 __author__ = 'Igor Medeiros'
 
 import random
@@ -25,8 +27,8 @@ def loadData():
         liFile = open(file_links, "r")
         for index, line in enumerate(liFile):
             line = line.split()
-            target = line[1]
-            source = line[0]
+            target = line[0]
+            source = line[1]
 
             if source not in data:
                 data[source] = {"adjacence": [target], "label": ""}
@@ -54,7 +56,8 @@ def chunkIt(seq, num):
     """
     Chunck a list of elements (seq) into a number (num) of sublists
     """
-    avg = len(seq) / float(num)
+    assert num > 0
+    avg = math.ceil(len(seq) / float(num))
     out = []
     last = 0.0
 
@@ -86,6 +89,7 @@ def buildMatrix(newdata):
     Input: Dictionary with info about adjacences and labels
     Output: Matrix, in the form of a list(columns) of lists(rows).
     """
+    matrix = []
 
     for key in mapping:
         # row with all zeros
@@ -97,7 +101,7 @@ def buildMatrix(newdata):
         # Node is not labeled case
         if label is "":
             # same probability among adjancents nodes
-            value = 1/len(adjacences)
+            value = 1/float(len(adjacences))
             # update value only for adjacents nodes
             for elementIndex in range(len(row)):
                 if mapping[elementIndex] in adjacences:
@@ -108,13 +112,18 @@ def buildMatrix(newdata):
             index = mapping.index(key)
             row[index] = 1.0
 
+        matrix.append(row)
+
+    return matrix
+
 
 def saveFile(matrix, filename):
 
     try:
-        sFile = open(filename, "ab")
+        sFile = open(filename, "wb")
+
         for line in matrix:
-            sFile.write(line)
+            print>>sFile, line
 
     finally:
         sFile.close()
@@ -132,7 +141,7 @@ def generateCrossvalidation():
     for index, set in enumerate(subsets):
         newdata = createSubDict(set)
         matrix = buildMatrix(newdata)
-        saveFile(matrix, "validationSet" + str(index))
+        saveFile(matrix, "validationSet" + str(index) + ".txt")
 
 
 def main():
