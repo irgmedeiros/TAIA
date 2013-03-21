@@ -1,7 +1,6 @@
-import math
-
 __author__ = 'Igor Medeiros'
 
+import math
 import random
 import os
 
@@ -12,9 +11,9 @@ file_links = "texas.cites"
 file_labels = "texas.content"
 
 
-# Guarda a lista de adjacencia e o label
+# Hold the adjacence's lists and the label
 data = {}
-# Guarda o id dos registros. Id e a posicao na listaw
+# Hold the ID of registries. ID is the position in the list
 mapping = []
 
 def loadData():
@@ -22,7 +21,7 @@ def loadData():
     load the data
     """
 
-    # Load adjacences
+    # Load adjacencies
     try:
         liFile = open(file_links, "r")
         for index, line in enumerate(liFile):
@@ -86,7 +85,7 @@ def createSubDict(set):
 
 def buildMatrix(newdata):
     """
-    Input: Dictionary with info about adjacences and labels
+    Input: Dictionary with info about adjacencies and labels
     Output: Matrix, in the form of a list(columns) of lists(rows).
     """
     matrix = []
@@ -96,15 +95,15 @@ def buildMatrix(newdata):
         row = [0.0]*(len(mapping))
 
         label = newdata[key]["label"]
-        adjacences = newdata[key]["adjacence"]
+        adjacencies = newdata[key]["adjacence"]
 
         # Node is not labeled case
         if label is "":
-            # same probability among adjancents nodes
-            value = 1/float(len(adjacences))
+            # same probability among adjacents nodes
+            value = 1/float(len(adjacencies))
             # update value only for adjacents nodes
             for elementIndex in range(len(row)):
-                if mapping[elementIndex] in adjacences:
+                if mapping[elementIndex] in adjacencies:
                     row[elementIndex] = value
 
         # Node is labeled case
@@ -118,18 +117,20 @@ def buildMatrix(newdata):
 
 
 def saveFile(matrix, filename):
-
     try:
         sFile = open(filename, "wb")
-
-        for line in matrix:
-            print>>sFile, line
+        for row in matrix:
+            string = " ".join(map(str, row))
+            print>>sFile, string
 
     finally:
         sFile.close()
 
 
 def generateCrossvalidation():
+    """
+    Generates the cross validation sets
+    """
     mapping_copy = list(mapping) # leave mapping to be read-only
 
     # Shuffle the list
@@ -141,7 +142,7 @@ def generateCrossvalidation():
     for index, set in enumerate(subsets):
         newdata = createSubDict(set)
         matrix = buildMatrix(newdata)
-        saveFile(matrix, "validationSet" + str(index) + ".txt")
+        saveFile(matrix, "validationSet" + str(index+1) + ".txt")
 
 
 def main():
