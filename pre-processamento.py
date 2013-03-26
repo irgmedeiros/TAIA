@@ -169,6 +169,12 @@ def generateCrossvalidation():
 
 
 def main():
+    originalP_matrix = buildProbMatrix(mapping)
+    originalL_matrix = buildLabelMatrix(mapping)
+
+    saveMatrixFile(originalP_matrix, "originalProbability" + ".txt")
+    saveMatrixFile(originalL_matrix, "originalLabel" + ".txt")
+
     loadData()
     generateCrossvalidation()
 
