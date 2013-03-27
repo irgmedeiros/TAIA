@@ -21,6 +21,8 @@ def loadData():
     load the data
     """
 
+    global mapping
+
     # Load adjacencies
     try:
         liFile = open(file_links, "r")
@@ -157,11 +159,11 @@ def generateCrossvalidation():
     # Shuffle the list
     random.shuffle(mapping_copy)
     # Generate Independents subsets
-    subsets = chunkIt(mapping_copy, 10)
+    sublists = chunkIt(mapping_copy, 10)
 
     # Create crossValidation files
-    for index, set in enumerate(subsets):
-        newdata = createSubDict(set)
+    for index, list in enumerate(sublists):
+        newdata = createSubDict(list)
         p_matrix = buildProbMatrix(newdata)
         l_matrix = buildLabelMatrix(newdata)
         saveMatrixFile(p_matrix, "cvProbability" + str(index+1) + ".txt")
@@ -169,15 +171,16 @@ def generateCrossvalidation():
 
 
 def main():
-    originalP_matrix = buildProbMatrix(mapping)
-    originalL_matrix = buildLabelMatrix(mapping)
 
-    saveMatrixFile(originalP_matrix, "originalProbability" + ".txt")
-    saveMatrixFile(originalL_matrix, "originalLabel" + ".txt")
-
+    global mapping
     loadData()
     generateCrossvalidation()
 
+    dic = createSubDict(mapping)
+    originalP_matrix = buildProbMatrix(dic)
+    originalL_matrix = buildLabelMatrix(dic)
+    saveMatrixFile(originalP_matrix, "originalProbability" + ".txt")
+    saveMatrixFile(originalL_matrix, "originalLabel" + ".txt")
 
 if __name__ == '__main__':
     main()
