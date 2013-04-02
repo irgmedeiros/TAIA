@@ -140,8 +140,10 @@ def buildLabelMatrix(newdata):
     return matrix
 
 def saveMatrixFile(matrix, filename):
+    filename = os.path.join(PROJECT_ROOT_PATH, 'data', filename)
+    sFile = open(filename, "wb")
     try:
-        sFile = open(filename, "wb")
+
         for row in matrix:
             string = " ".join(map(str, row))
             print>>sFile, string
@@ -162,12 +164,19 @@ def generateCrossvalidation():
     sublists = chunkIt(mapping_copy, 10)
 
     # Create crossValidation files
-    for index, list in enumerate(sublists):
-        newdata = createSubDict(list)
+    for index, lista in enumerate(sublists):
+        newdata = createSubDict(lista)
         p_matrix = buildProbMatrix(newdata)
         l_matrix = buildLabelMatrix(newdata)
         saveMatrixFile(p_matrix, "cvProbability" + str(index+1) + ".txt")
         saveMatrixFile(l_matrix, "cvLabel" + str(index+1) + ".txt")
+
+
+def removeAllLabels(dic):
+    for key in mapping:
+        dic[key]["label"] = ""
+
+    return dic
 
 
 def main():
@@ -181,6 +190,12 @@ def main():
     originalL_matrix = buildLabelMatrix(dic)
     saveMatrixFile(originalP_matrix, "originalProbability" + ".txt")
     saveMatrixFile(originalL_matrix, "originalLabel" + ".txt")
+
+    dicUnlabelled = removeAllLabels(dic)
+    unlabelledP_matrix = buildProbMatrix(dicUnlabelled)
+    unlabelledL_matrix = buildLabelMatrix(dicUnlabelled)
+    saveMatrixFile(unlabelledP_matrix, "unlabelledProbability" + ".txt")
+    saveMatrixFile(unlabelledL_matrix, "unlabelled" + ".txt")
 
 if __name__ == '__main__':
     main()
