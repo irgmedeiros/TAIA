@@ -35,11 +35,15 @@ def loadData():
 
             if source not in data:
                 data[source] = {"adjacence": [target], "label": ""}
+            else:
+                if target not in data[source]["adjacence"]:
+                    data[source]["adjacence"].append(target)
+
             if target not in data:
                 data[target] = {"adjacence": [source], "label": ""}
             else:
-                data[source]["adjacence"].append(target)
-                data[target]["adjacence"].append(source)
+                if source not in data[target]["adjacence"]:
+                    data[target]["adjacence"].append(source)
 
     finally:
         liFile.close()
@@ -66,6 +70,25 @@ def loadData():
 
     finally:
         laFile.close()
+
+
+def calculate_similarities():
+    for source in data:
+        data[source].setdefault("similarities", [])
+        fvector_source = data[source]["features"]
+        a = fvector_source
+
+        for neibor in data[source]["adjacence"]:
+            fvector_neibor = data[neibor]["features"]
+            b = fvector_neibor
+            sim_euclidian = 1.0 / (1.0 + math.sqrt(sum((int(a) - int(b)) ** 2 for a, b in zip(a, b))))
+            # sim_euclidian = np.linalg.norm(fvector_neibor - fvector_source)
+            # sim_euclidian = dist(fvector_neibor, fvector_source )
+            data[source]["similarities"].append(sim_euclidian)
+
+
+def dist(x, y):
+    return np.sqrt(np.sum((x - y) ** 2))
 
 
 def chunkIt(seq, num):
@@ -96,7 +119,8 @@ def createSubDict(set):
     # remove the labels of every key that is not in set
     for key in all_keys:
         if key not in set:
-            newdata[key] = {"adjacence": newdata[key]["adjacence"], "label": ""}
+            newdata[key] = {"adjacence": newdata[key]["adjacence"], "label": "",
+                            "similarities": newdata[key]["similarities"]}
 
     return newdata
 
@@ -114,14 +138,21 @@ def buildProbMatrix(newdata):
 
         label = newdata[key]["label"]
         adjacencies = newdata[key]["adjacence"]
+        similarities = newdata[key]["similarities"]
 
         # Case: Node is not labeled case
         if label is "" and adjacencies != []:
+            # TODO: Ajustar para considerar no peso a similaridade euclidiana
+            # for neibor, index in enumerate(adjacencies):
+            #     weight = similarities[index]
+
             # same probability among adjacents nodes
             value = 1 / float(len(adjacencies))
+
             # update value only for adjacents nodes
             for elementIndex in range(len(row)):
                 if mapping[elementIndex] in adjacencies:
+                    # row[elementIndex] = similarities[elementIndex] / float(len(adjacencies))
                     row[elementIndex] = value
 
         # Case: Node is labeled or don't cite anyone
@@ -202,6 +233,8 @@ def removeAllLabels(dic):
 def main():
     global mapping
     loadData()
+    calculate_similarities()
+
     generateCrossvalidation(0.1)
     generateCrossvalidation(0.2)
     generateCrossvalidation(0.3)
