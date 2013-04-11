@@ -71,6 +71,15 @@ def loadData():
     finally:
         laFile.close()
 
+    # exclude isolated nodes
+    exclude_list = []
+    for node in data:
+        if (len(data[node]["adjacence"]) == 1) and (data[node]["adjacence"][0] == node):
+            exclude_list.append(node)
+
+    for node in exclude_list:
+        data.pop(node)
+        mapping.pop(mapping.index(node))
 
 def calculate_similarities():
     for source in data:
